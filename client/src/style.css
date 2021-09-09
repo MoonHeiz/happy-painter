@@ -105,6 +105,7 @@ ul {
   position: absolute;
   top: 0;
   left: 0;
+  display: block;
   cursor: none;
   outline: none;
   z-index: -1;
@@ -135,15 +136,23 @@ ul {
 
 /* Toolbar */
 .toolbar {
-  display: flex;
   position: fixed;
   bottom: 0;
   left: 0;
-  padding: 25px;
+  width: 100%;
+  max-width: 770px;
   z-index: var(--z-index-of-controls);
   opacity: var(--opacity-of-controls);
   pointer-events: var(--pointer-events-of-controls);
   transition: opacity 0.25s ease-in-out;
+}
+
+.toolbar-content {
+  display: flex;
+  padding: 25px;
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .color-list {
