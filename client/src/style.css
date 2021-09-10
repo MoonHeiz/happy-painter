@@ -47,6 +47,10 @@ ul {
   width: 100%;
 }
 
+.btn-margin-bottom {
+  margin-bottom: 10px;
+}
+
 .btn-transparent {
   background-color: transparent;
   color: var(--basic-dark-color);
@@ -83,18 +87,14 @@ ul {
 }
 
 .draw {
-  display: block;
   height: 100vh;
   width: 100vw;
   overflow: scroll;
-  cursor: none;
-  outline: none;
-  z-index: -1;
 }
 
 .draw::-webkit-scrollbar {
-  width: 14px;
-  height: 14px;
+  width: 12px;
+  height: 12px;
 }
 
 .draw::-webkit-scrollbar-track,
@@ -112,7 +112,11 @@ ul {
 }
 
 .draw-content {
+  display: block;
   touch-action: none;
+  cursor: none;
+  outline: none;
+  z-index: -1;
 }
 
 .cursor {
@@ -288,7 +292,6 @@ ul {
   padding: 25px;
   border-radius: 10px;
   width: 300px;
-  height: 350px;
   background-color: #fff;
 }
 
@@ -318,6 +321,10 @@ ul {
 
 .pop-up-field:focus-visible {
   box-shadow: 0 0 0 2px var(--basic-transparent-dark-color);
+}
+
+.pop-up-info {
+  margin: 0 0 10px;
 }
 
 @media screen and (max-width: 700px) {

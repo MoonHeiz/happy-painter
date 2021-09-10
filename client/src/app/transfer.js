@@ -51,10 +51,20 @@ const initMenuEvents = () => {
   document.addEventListener('join-room', joinRoom);
 };
 
-const createRoomHandler = ({ type }) => {
+const showUserInfo = (message) => {
+  const activateMenuEvent = new CustomEvent('show-info', {
+    detail: {
+      message,
+    },
+  });
+  document.dispatchEvent(activateMenuEvent);
+};
+
+const createRoomHandler = ({ type, message }) => {
   if (type === 'success') {
     SETTINGS.isConnected = true;
   }
+  showUserInfo(message);
 };
 
 const joinRoomHandler = ({ type, message }) => {
@@ -68,6 +78,7 @@ const joinRoomHandler = ({ type, message }) => {
       SETTINGS.isConnected = true;
     }
   }
+  showUserInfo(message);
 };
 
 const initConnection = () => {

@@ -15,6 +15,7 @@ const popUp = {
     roomName: null,
     roomPassword: null,
   },
+  info: null,
   submit: null,
   activeCallback: null,
 };
@@ -41,8 +42,10 @@ const setupPopUp = () => {
   popUp.fields.roomPassword.id = 'password';
   popUp.fields.roomPassword.placeholder = '(optional)';
 
-  popUp.submit.classList.add('btn', 'btn-strech');
+  popUp.submit.classList.add('btn', 'btn-strech', 'btn-margin-bottom');
   popUp.submit.type = 'submit';
+
+  popUp.info.classList.add('pop-up-info');
 };
 
 const createPopUp = () => {
@@ -53,6 +56,7 @@ const createPopUp = () => {
   popUp.labels.roomPassword = document.createElement('label');
   popUp.fields.roomName = document.createElement('input');
   popUp.fields.roomPassword = document.createElement('input');
+  popUp.info = document.createElement('p');
   popUp.submit = document.createElement('input');
 
   popUp.wrapper.append(popUp.form);
@@ -61,6 +65,7 @@ const createPopUp = () => {
   popUp.form.append(popUp.fields.roomName);
   popUp.form.append(popUp.labels.roomPassword);
   popUp.form.append(popUp.fields.roomPassword);
+  popUp.form.append(popUp.info);
   popUp.form.append(popUp.submit);
 };
 
@@ -70,6 +75,7 @@ const closePopUp = ({ target, key }) => {
     window.removeEventListener('keydown', closePopUp);
     popUp.form.removeEventListener('submit', popUp.activeCallback);
     popUp.wrapper.remove();
+    popUp.info.innerText = '';
     showControls();
   }
 };
@@ -153,9 +159,15 @@ const deactivateMenu = () => {
   joinRoomButton.removeEventListener('click', showJoinRoom);
 };
 
+const showInfo = ({ detail }) => {
+  const { message } = detail;
+  popUp.info.innerText = message;
+};
+
 const initMenu = () => {
   document.addEventListener('activate-menu', activateMenu);
   document.addEventListener('deactivate-menu', deactivateMenu);
+  document.addEventListener('show-info', showInfo);
 };
 
 export default initMenu;
