@@ -52,32 +52,33 @@ const initMenuEvents = () => {
 };
 
 const showUserInfo = (message) => {
-  const activateMenuEvent = new CustomEvent('show-info', {
+  const showInfoEvent = new CustomEvent('show-info', {
     detail: {
       message,
     },
   });
-  document.dispatchEvent(activateMenuEvent);
+  document.dispatchEvent(showInfoEvent);
 };
 
 const createRoomHandler = ({ type, message }) => {
   if (type === 'success') {
     SETTINGS.isConnected = true;
   }
+
   showUserInfo(message);
 };
 
-const joinRoomHandler = ({ type, message }) => {
-  if (type === 'success') {
-    if (typeof message === 'object') {
-      const { drawHistory: newDrawHistory } = message;
-      const clearCanvasEvent = new CustomEvent('clear-canvas');
-      document.dispatchEvent(clearCanvasEvent);
+const joinRoomHandler = ({ message }) => {
+  if (typeof message === 'object') {
+    const { drawHistory: newDrawHistory } = message;
+    const clearCanvasEvent = new CustomEvent('clear-canvas');
+    document.dispatchEvent(clearCanvasEvent);
 
-      newDrawHistory.forEach((drawInfo) => anotherClientDraws(drawInfo));
-      SETTINGS.isConnected = true;
-    }
+    newDrawHistory.forEach((drawInfo) => anotherClientDraws(drawInfo));
+    SETTINGS.isConnected = true;
+    return;
   }
+
   showUserInfo(message);
 };
 
