@@ -3,7 +3,7 @@ import {
   setPencilPosition, showPencil, hidePencil, showControls, hideControls,
 } from './common';
 
-const canvas = document.querySelector('canvas.draw');
+const canvas = document.querySelector('canvas.draw-content');
 const context = canvas.getContext('2d', { alpha: false });
 
 const drawHistory = [];
@@ -67,23 +67,27 @@ const clientDraw = (x0, y0, x1, y1) => {
 };
 
 const changeDrawPosition = ({
-  pageX, pageY, clientX, clientY,
+  offsetX, offsetY, clientX, clientY,
 }) => {
   setPencilPosition(clientX, clientY);
 
   if (!isDrawing) return;
 
-  clientDraw(currentPointerPosition.x, currentPointerPosition.y, pageX, pageY);
-  currentPointerPosition.x = pageX;
-  currentPointerPosition.y = pageY;
+  clientDraw(currentPointerPosition.x, currentPointerPosition.y, offsetX, offsetY);
+  currentPointerPosition.x = offsetX;
+  currentPointerPosition.y = offsetY;
 };
 
-const drawStart = ({ pageX, pageY }) => {
+const drawStart = ({
+  offsetX, offsetY, clientX, clientY,
+}) => {
   hideControls();
   isDrawing = true;
-  currentPointerPosition.x = pageX;
-  currentPointerPosition.y = pageY;
-  changeDrawPosition({ pageX, pageY });
+  currentPointerPosition.x = offsetX;
+  currentPointerPosition.y = offsetY;
+  changeDrawPosition({
+    offsetX, offsetY, clientX, clientY,
+  });
 };
 
 const drawStop = () => {
@@ -105,15 +109,15 @@ const clearCanvas = () => {
 
 const enableCanvas = () => {
   showPencil();
-  canvas.addEventListener('mousemove', changeDrawPosition);
-  canvas.addEventListener('mouseup', drawStop);
-  canvas.addEventListener('mousedown', drawStart);
+  canvas.addEventListener('pointermove', changeDrawPosition);
+  canvas.addEventListener('pointerup', drawStop);
+  canvas.addEventListener('pointerdown', drawStart);
 
-  canvas.addEventListener('mouseleave', () => {
+  canvas.addEventListener('pointerleave', () => {
     drawStop();
     hidePencil();
   });
-  canvas.addEventListener('mouseenter', showPencil);
+  canvas.addEventListener('pointerenter', showPencil);
 };
 
 const initCanvas = () => {
