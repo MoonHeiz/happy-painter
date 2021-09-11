@@ -60,7 +60,7 @@ const connectUserToRoom = (socket, name) => {
 
 const createRoom = (socket, name, password, drawHistory) => {
   if (ROOMS[name]) {
-    sendMessage(socket, EVENTS.createRoom, MESSAGE_TYPES.error, 'This room already exists');
+    sendMessage(socket, EVENTS.createRoom, MESSAGE_TYPES.error, 'Oh oh, it looks like such a room already exists');
   } else {
     ROOMS[name] = {
       password: password || '',
@@ -69,21 +69,26 @@ const createRoom = (socket, name, password, drawHistory) => {
     };
 
     connectUserToRoom(socket, name);
-    sendMessage(socket, EVENTS.createRoom, MESSAGE_TYPES.success, 'Room was created');
+    sendMessage(
+      socket,
+      EVENTS.createRoom,
+      MESSAGE_TYPES.success,
+      'Congratulations✨ your room has been successfully created!'
+    );
   }
 };
 
 const joinRoom = (socket, name, password) => {
   if (!ROOMS[name]) {
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'Room doesnt exist');
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'It seems that such a room does not exist');
   } else if (ROOMS[name].password !== '' && ROOMS[name].password !== password) {
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'Incorrect password');
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'Oops, it looks like you entered the wrong password⛔');
   } else if (ROOMS[name].users[socket.id]) {
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'You already connected to this room');
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'You are already in this room😐');
   } else {
     connectUserToRoom(socket, name);
     console.log(`USER ${socket.id} was connected to -> ${name}`);
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, 'You success connect to room');
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, 'You have successfully connected to the room✔️');
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, { drawHistory: ROOMS[name].drawHistory });
   }
 };
