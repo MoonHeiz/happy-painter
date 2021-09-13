@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "live": "nodemon server.js",
+    "watch": "nodemon server.js",
     "heroku-prebuild": "cd client && npm install --dev && npm run lint && npm run build",
     "start": "node server.js"
   },
