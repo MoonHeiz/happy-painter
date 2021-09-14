@@ -3,10 +3,12 @@ import {
   setPencilPosition, showPencil, hidePencil, showControls, hideControls,
 } from './common';
 
+const canvasWrapper = document.querySelector('.draw');
 const canvas = document.querySelector('canvas.draw-content');
 const context = canvas.getContext('2d', { alpha: false });
 
 const drawHistory = [];
+const connectedUsers = {};
 
 const currentPointerPosition = {
   x: -999,
@@ -27,13 +29,20 @@ const draw = (x0, y0, x1, y1, color, lineWidth) => {
   context.closePath();
 };
 
+const changeGhostCursorPosition = (user, x, y) => {
+  if (user) {
+    connectedUsers[user].style.left = `${x}px`;
+    connectedUsers[user].style.top = `${y}px`;
+  }
+};
+
 const ghostDraw = ({ detail }) => {
-  const { drawInfo } = detail;
+  const { drawInfo, user } = detail;
   const {
     x0, y0, x1, y1, color, lineWidth,
   } = drawInfo;
   draw(x0, y0, x1, y1, color, lineWidth);
-
+  changeGhostCursorPosition(user, x1, y1);
   drawHistory.push(drawInfo);
 };
 
@@ -48,7 +57,6 @@ const saveDrawPositions = (x0, y0, x1, y1, color, lineWidth) => {
     lineCap: SETTINGS.lineCap,
     lineJoin: SETTINGS.lineJoin,
   };
-
   drawHistory.push(drawPositions);
 
   if (SETTINGS.isConnected) {
@@ -86,7 +94,10 @@ const drawStart = ({
   currentPointerPosition.x = offsetX;
   currentPointerPosition.y = offsetY;
   changeDrawPosition({
-    offsetX, offsetY, clientX, clientY,
+    offsetX,
+    offsetY,
+    clientX,
+    clientY,
   });
 };
 
@@ -107,6 +118,38 @@ const clearCanvas = () => {
   drawHistory.length = 0;
 };
 
+const addUser = (username) => {
+  connectedUsers[username] = document.createElement('div');
+  connectedUsers[username].classList.add('ghost');
+  connectedUsers[username].innerHTML = `<div class="cursor-image ghost-cursor-image"></div><span>${username}</span>`;
+  canvasWrapper.append(connectedUsers[username]);
+};
+
+const removeUser = (username) => {
+  connectedUsers[username].remove();
+  delete connectedUsers[username];
+};
+
+const removeAllUsers = () => {
+  const arrayOfUsers = Object.keys(connectedUsers);
+
+  if (arrayOfUsers.length > 0) {
+    for (let i = 0; i < arrayOfUsers.length; i += 1) {
+      removeUser(arrayOfUsers[i]);
+    }
+  }
+};
+
+const updateUsers = ({ detail }) => {
+  removeAllUsers();
+  const { users } = detail;
+  for (let i = 0; i < users.length - 1; i += 1) {
+    if (!connectedUsers[users[i]]) {
+      addUser(users[i]);
+    }
+  }
+};
+
 const enableCanvas = () => {
   showPencil();
   canvas.addEventListener('pointermove', changeDrawPosition);
@@ -125,6 +168,10 @@ const initCanvas = () => {
   enableCanvas();
   document.addEventListener('ghost-draw', ghostDraw);
   document.addEventListener('clear-canvas', clearCanvas);
+  document.addEventListener('update-users', updateUsers);
+  document.addEventListener('add-user', ({ detail }) => addUser(detail.username));
+  document.addEventListener('remove-user', ({ detail }) => removeUser(detail.username));
+  document.addEventListener('remove-users', removeAllUsers);
 };
 
 export { initCanvas, drawHistory };

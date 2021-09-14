@@ -22,14 +22,81 @@ const EVENTS = {
   disconnect: 'disconnect',
   exchangeData: 'send-data',
   sendData: 'receive-data',
+  connectNotify: 'user-connected',
+  disconnectNotify: 'user-disconnected',
 };
 const MESSAGE_TYPES = {
   error: 'error',
   success: 'success',
 };
 
+const prefixNames = ['Red', 'Blue', 'Green', 'Gold', 'GoldenRod', 'Gray', 'Grey', 'Green', 'Lime', 'Ivory'];
+
+const animalNames = [
+  'Fox',
+  'Dinosaur',
+  'Dog',
+  'Alpaca',
+  'Cat',
+  'Baboon',
+  'Bear',
+  'Bee',
+  'Boar',
+  'Buffalo',
+  'Butterfly',
+  'Camel',
+  'Chicken',
+  'Cobra',
+  'Crab',
+  'Crocodile',
+  'Deer',
+  'Dolphin',
+  'Duck',
+  'Eagle',
+  'Elephant',
+  'Falcon',
+  'Ferret',
+  'Finch',
+  'Fish',
+  'Flamingo',
+  'Goose',
+  'Jaguar',
+  'Koala',
+  'Kudu',
+  'Lark',
+  'Lemur',
+  'Leopard',
+  'Lion',
+  'Llama',
+  'Mouse',
+  'Mule',
+  'Octopus',
+  'Okapi',
+  'Opossum',
+  'Owl',
+  'Panther',
+  'Pelican',
+  'Penguin',
+  'Pony',
+  'Porcupine',
+  'Rabbit',
+  'Salamander',
+  'Scorpion',
+  'Zebra',
+];
+
 const sendMessage = (socket, event, type, message) => {
   socket.emit(event, { type, message });
+};
+
+const notifyAboutConnection = (socket) => {
+  const roomName = CONNECTED_USERS[socket.id];
+  socket.to(roomName).emit(EVENTS.connectNotify, { connectedUser: ROOMS[roomName].users[socket.id] });
+};
+
+const notifyAboutDisconnect = (socket, username) => {
+  const roomName = CONNECTED_USERS[socket.id];
+  socket.to(roomName).emit(EVENTS.disconnectNotify, { disconnectedUser: username });
 };
 
 const disconnect = (socket) => {
@@ -39,28 +106,33 @@ const disconnect = (socket) => {
     return;
   } else if (Object.keys(ROOMS[roomName].users).length < 2) {
     delete ROOMS[roomName];
-    console.log(`Nobody in room ${roomName} removing it`);
   } else {
+    const username = ROOMS[roomName].users[socket.id];
     delete ROOMS[roomName].users[socket.id];
-    console.log(`User ${socket.id} was leave from room ${roomName}`);
+    notifyAboutDisconnect(socket, username);
+    socket.leave(roomName);
   }
 
   delete CONNECTED_USERS[socket.id];
 };
 
 const connectUserToRoom = (socket, name) => {
-  if (CONNECTED_USERS[socket.id]) {
+  if (socket.rooms.size > 1) {
     disconnect(socket);
   }
 
   socket.join(name);
   CONNECTED_USERS[socket.id] = name;
-  ROOMS[name].users[socket.id] = true;
+  const totalUsersInRoom = Object.keys(ROOMS[name].users).length;
+  const prefix = prefixNames[totalUsersInRoom % prefixNames.length];
+  const postfix = animalNames[totalUsersInRoom % animalNames.length];
+  const generatedName = `${prefix} ${postfix}`;
+  ROOMS[name].users[socket.id] = generatedName;
 };
 
 const createRoom = (socket, name, password, drawHistory) => {
   if (ROOMS[name]) {
-    sendMessage(socket, EVENTS.createRoom, MESSAGE_TYPES.error, 'Oh oh, it looks like such a room already exists');
+    sendMessage(socket, EVENTS.createRoom, MESSAGE_TYPES.error, 'Oh oh, it looks like such a room already exists😱');
   } else {
     ROOMS[name] = {
       password: password || '',
@@ -69,6 +141,7 @@ const createRoom = (socket, name, password, drawHistory) => {
     };
 
     connectUserToRoom(socket, name);
+
     sendMessage(
       socket,
       EVENTS.createRoom,
@@ -80,28 +153,30 @@ const createRoom = (socket, name, password, drawHistory) => {
 
 const joinRoom = (socket, name, password) => {
   if (!ROOMS[name]) {
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'It seems that such a room does not exist');
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'It seems that such a room does not exist😰');
   } else if (ROOMS[name].password !== '' && ROOMS[name].password !== password) {
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'Oops, it looks like you entered the wrong password⛔');
   } else if (ROOMS[name].users[socket.id]) {
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'You are already in this room😐');
   } else {
     connectUserToRoom(socket, name);
-    console.log(`USER ${socket.id} was connected to -> ${name}`);
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, 'You have successfully connected to the room✔️');
-    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, { drawHistory: ROOMS[name].drawHistory });
+    sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, {
+      drawHistory: ROOMS[name].drawHistory,
+      connectedUsers: Object.values(ROOMS[name].users),
+    });
+    notifyAboutConnection(socket);
   }
 };
 
 const exchangeData = (socket, drawInfo) => {
   const roomName = CONNECTED_USERS[socket.id];
+  const from = ROOMS[roomName].users[socket.id];
   ROOMS[roomName].drawHistory.push(drawInfo);
-  const users = Object.keys(ROOMS[roomName].users);
-  for (let i = 0; i < users.length; i += 1) {
-    socket.to(roomName).emit(EVENTS.sendData, {
-      drawInfo,
-    });
-  }
+  socket.to(roomName).emit(EVENTS.sendData, {
+    drawInfo,
+    user: from,
+  });
 };
 
 const handleConnection = (socket) => {
