@@ -29,9 +29,8 @@ const draw = (x0, y0, x1, y1, color, lineWidth) => {
   context.closePath();
 };
 
-const changeUserPosition = (user, x, y) => {
+const changeGhostCursorPosition = (user, x, y) => {
   if (user) {
-    Object.keys(connectedUsers);
     connectedUsers[user].style.left = `${x}px`;
     connectedUsers[user].style.top = `${y}px`;
   }
@@ -43,7 +42,7 @@ const ghostDraw = ({ detail }) => {
     x0, y0, x1, y1, color, lineWidth,
   } = drawInfo;
   draw(x0, y0, x1, y1, color, lineWidth);
-  changeUserPosition(user, x1, y1);
+  changeGhostCursorPosition(user, x1, y1);
   drawHistory.push(drawInfo);
 };
 
@@ -58,7 +57,6 @@ const saveDrawPositions = (x0, y0, x1, y1, color, lineWidth) => {
     lineCap: SETTINGS.lineCap,
     lineJoin: SETTINGS.lineJoin,
   };
-
   drawHistory.push(drawPositions);
 
   if (SETTINGS.isConnected) {
@@ -123,7 +121,7 @@ const clearCanvas = () => {
 const addUser = (username) => {
   connectedUsers[username] = document.createElement('div');
   connectedUsers[username].classList.add('ghost');
-  connectedUsers[username].innerText = username;
+  connectedUsers[username].innerHTML = `<div class="cursor-image ghost-cursor-image"></div><span>${username}</span>`;
   canvasWrapper.append(connectedUsers[username]);
 };
 
@@ -143,8 +141,8 @@ const removeAllUsers = () => {
 };
 
 const updateUsers = ({ detail }) => {
-  const { users } = detail;
   removeAllUsers();
+  const { users } = detail;
   for (let i = 0; i < users.length - 1; i += 1) {
     if (!connectedUsers[users[i]]) {
       addUser(users[i]);

@@ -34,12 +34,10 @@ const prefixNames = ['Red', 'Blue', 'Green', 'Gold', 'GoldenRod', 'Gray', 'Grey'
 
 const animalNames = [
   'Fox',
-  'Alligator',
+  'Dinosaur',
+  'Dog',
   'Alpaca',
-  'Antelope',
-  'Ape',
-  'Armadillo',
-  'Donkey',
+  'Cat',
   'Baboon',
   'Bear',
   'Bee',
@@ -47,14 +45,11 @@ const animalNames = [
   'Buffalo',
   'Butterfly',
   'Camel',
-  'Cat',
   'Chicken',
   'Cobra',
   'Crab',
   'Crocodile',
   'Deer',
-  'Dinosaur',
-  'Dog',
   'Dolphin',
   'Duck',
   'Eagle',
@@ -111,14 +106,10 @@ const disconnect = (socket) => {
     return;
   } else if (Object.keys(ROOMS[roomName].users).length < 2) {
     delete ROOMS[roomName];
-    console.log(`Nobody in room ${roomName} removing it`);
   } else {
     const username = ROOMS[roomName].users[socket.id];
     delete ROOMS[roomName].users[socket.id];
-    console.log(`User ${socket.id} was leave from room ${roomName}`);
     notifyAboutDisconnect(socket, username);
-
-    console.log('USER LEAVE');
     socket.leave(roomName);
   }
 
@@ -157,7 +148,6 @@ const createRoom = (socket, name, password, drawHistory) => {
       MESSAGE_TYPES.success,
       'Congratulations✨ your room has been successfully created!'
     );
-    console.log('ROOM WAS CREATED');
   }
 };
 
@@ -170,7 +160,6 @@ const joinRoom = (socket, name, password) => {
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.error, 'You are already in this room😐');
   } else {
     connectUserToRoom(socket, name);
-    console.log(`USER ${socket.id} was connected to -> ${name}`);
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, 'You have successfully connected to the room✔️');
     sendMessage(socket, EVENTS.joinRoom, MESSAGE_TYPES.success, {
       drawHistory: ROOMS[name].drawHistory,

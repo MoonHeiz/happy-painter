@@ -14,15 +14,17 @@ const connect = () => {
 const disconnect = () => {
   SETTINGS.isConnected = false;
   const deactivateMenuEvent = new CustomEvent('deactivate-menu');
+  const removeConnectedUsers = new CustomEvent('remove-users');
   document.dispatchEvent(deactivateMenuEvent);
+  document.dispatchEvent(removeConnectedUsers);
 };
 
-const createRoom = ({ detail }) => {
+const sendRequestToCreateRoom = ({ detail }) => {
   const { roomName, roomPassword } = detail;
   socket.emit('create-room', { name: roomName, password: roomPassword, drawHistory });
 };
 
-const joinRoom = ({ detail }) => {
+const sendRequestToJoinRoom = ({ detail }) => {
   const { roomName, roomPassword } = detail;
   socket.emit('join-room', { name: roomName, password: roomPassword });
 };
@@ -47,8 +49,8 @@ const initCanvasEvents = () => {
 };
 
 const initMenuEvents = () => {
-  document.addEventListener('create-room', createRoom);
-  document.addEventListener('join-room', joinRoom);
+  document.addEventListener('create-room', sendRequestToCreateRoom);
+  document.addEventListener('join-room', sendRequestToJoinRoom);
 };
 
 const showUserInfo = (message) => {
@@ -76,15 +78,13 @@ const joinRoomHandler = ({ message, type }) => {
     const { drawHistory: newDrawHistory, connectedUsers } = message;
     const clearCanvasEvent = new CustomEvent('clear-canvas');
     document.dispatchEvent(clearCanvasEvent);
-
     newDrawHistory.forEach((drawInfo) => anotherClientDraws(drawInfo));
     const updateConnectedUsers = new CustomEvent('update-users', { detail: { users: connectedUsers } });
     document.dispatchEvent(updateConnectedUsers);
     SETTINGS.isConnected = true;
-    return;
+  } else {
+    showUserInfo(message);
   }
-
-  showUserInfo(message);
 };
 
 const connectedUserHandler = (connectedUser) => {

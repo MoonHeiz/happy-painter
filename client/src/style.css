@@ -140,6 +140,14 @@ ul {
   background-size: cover;
 }
 
+.ghost-cursor-image {
+  height: 30px;
+  width: 30px;
+  position: absolute;
+  left: 0px;
+  top: -30px;
+}
+
 .cursor-show {
   opacity: 1;
 }
@@ -187,7 +195,7 @@ ul {
 
 .color-active {
   border-radius: 50%;
-  border: 3px solid #3033ff;
+  border: 3px solid var(--basic-dark-color);
 }
 
 .color-active:last-child {
